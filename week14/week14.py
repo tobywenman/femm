@@ -34,8 +34,9 @@ mo_makeplot(2,361,'Bgap.txt',1)
 flux = np.loadtxt("Bgap.txt")
 
 
-# plt.plot(flux[:,0],flux[:,1])
+plt.plot(flux[:,0],flux[:,1])
 
+plt.show()
 
 plt.plot(np.abs(np.fft.fft(flux[:,1])[:]))
 
