@@ -48,6 +48,9 @@ class motor():
             mi_selectgroup(i+1)
             mi_setblockprop("Coil",1,0,self.windings[i][0],0,i+1,self.windings[i][1]*self.turns)
             mi_clearselected()
+        
+        for i in ["R","B","Y"]:  
+            mi_setcurrent(i,152)
     
     def saveBgap(self,outFile):
         mi_analyse(0)
@@ -75,9 +78,9 @@ fig, ax = plt.subplots()
 width = 0.35
 
 for shortChord in range(4):
-    motors.append(motor(r"Tesla_stator.FEM",generatePattern(60,4,shortChord),calcTurns(15.01,shortChord,5,math.pi/15,4)))
+    motors.append(motor(r"Tesla_stator.FEM",generatePattern(60,4,shortChord),1))
     motors[shortChord].assignWindings()
-    #motors[shortChord].saveBgap("Bgap"+str(shortChord)+".txt")
+    motors[shortChord].saveBgap("Bgap"+str(shortChord)+".txt")
 
     flux = np.loadtxt("Bgap"+str(shortChord)+".txt")
     x = np.arange(len(flux[:,0])//2-1)
