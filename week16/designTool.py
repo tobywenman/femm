@@ -57,9 +57,15 @@ class app(tk.Tk):
             
 
         button = tk.Button(text="Compute solution",command=self.enterValues)
-        button.grid(column=0,columnspan=2) 
+        button.grid(column=0)
+
+        row = button.grid_info()["row"]
+
+        button =  tk.Button(text="Clear output",command=self.clearOutput)
+        button.grid(column=1,row=row)
 
     def enterValues(self):
+        self.specs = []
         for i in self.entries:
             try:
                 self.specs.append(float(i.get()))
@@ -70,6 +76,19 @@ class app(tk.Tk):
     def inputValidation(window,newStr):
         return re.search(r"^$|^\d+[.]?\d*$",newStr) != None
     
+    def setOutput(self,entry,output):
+        entry.config(state="normal")
+        entry.delete(0,tk.END)
+        entry.insert(0,str(output))
+        entry.config(state="readonly")
+
+    def clearOutput(self):
+        for i in self.results:
+            i.config(state="normal")
+            i.delete(0,tk.END)
+            i.config(state="readonly")
+
+
     def calcDo(self):
         p = self.specs[5]
         B = self.specs[1]
@@ -85,9 +104,8 @@ class app(tk.Tk):
         exp3 = ((1+2*p)/p**2)*((B/Bmax)**2)+(2*B/Bmax)-1
         output = round((exp1 - math.sqrt(exp2-exp3))/exp3,3)
 
-        self.results[0].config(state="normal")
-        self.results[0].insert(0,str(output))
-        self.results[0].config(state="readonly")
+        self.setOutput(self.results[0],output)
+        
 
 window = app()  
 
