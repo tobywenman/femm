@@ -17,10 +17,11 @@ class app(tk.Tk):
     outputs = ["Split ratio D/Do",
                "Active Diameter D",
                "Active Length L",
-               "Tooth width WT",
-               "Back iron depth dB",
-               "Slot Area As",
-               "Slot bottom dia. Ds"]
+               "Tooth width WT/mm",
+               "Back iron depth dB/mm",
+               "Slot Area As/mm²",
+               "Slot bottom dia. Ds/mm",
+               "Outer diameter Do/mm"]
 
     specs = []
 
@@ -71,7 +72,7 @@ class app(tk.Tk):
                 self.specs.append(float(i.get()))
             except:
                 self.specs.append(i.get())
-        self.calcDo()
+        self.calc()
 
     def inputValidation(window,newStr):
         return re.search(r"^$|^\d+[.]?\d*$",newStr) != None
@@ -89,22 +90,45 @@ class app(tk.Tk):
             i.config(state="readonly")
 
 
-    def calcDo(self):
+    def calc(self):
+        T = self.specs[0]
         p = self.specs[5]
         B = self.specs[1]
         Bmax = self.specs[4]
         Q = self.specs[2]
         Do = self.specs[7]
         J = self.specs[3]
+        q = self.specs[6]
 
         J *= 1000*1000
 
+
+        #D/Do
         exp1 = ((1+p)/p)*(B/Bmax)+((2*Q)/(Do*J))
         exp2 = exp1**2
         exp3 = ((1+2*p)/p**2)*((B/Bmax)**2)+(2*B/Bmax)-1
-        output = round((exp1 - math.sqrt(exp2-exp3))/exp3,3)
+        D_Do = (exp1 - math.sqrt(exp2-exp3))/exp3
 
-        self.setOutput(self.results[0],output)
+        self.setOutput(self.results[0],round(D_Do,3))
+
+        #D
+        D = D_Do*Do
+        self.setOutput(self.results[1],round(D,3))
+
+        #L
+        L = T/((math.pi/(2*math.sqrt(2)))*(D**2)*B*Q)
+        self.setOutput(self.results[2],round(L,3))
+
+        WT = (B/Bmax)*(math.pi*D/q)
+        dB = (B/Bmax)*(D/(2*p))
+        As = (Q*math.pi*D)/(q*(J/1000/1000))
+        Ds = Do - 2*dB
+
+        self.setOutput(self.results[3],round(WT*1000,3))
+        self.setOutput(self.results[4],round(dB*1000,3))
+        self.setOutput(self.results[5],round(As,3))
+        self.setOutput(self.results[6],round(Ds*1000,3))
+        self.setOutput(self.results[7],round(Do*1000,3))
         
 
 window = app()  
