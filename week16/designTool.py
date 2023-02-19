@@ -1,5 +1,5 @@
 import tkinter as tk
-import re, math
+import re, math, femmModel
 
 class app(tk.Tk):
 
@@ -65,6 +65,9 @@ class app(tk.Tk):
         button =  tk.Button(text="Clear output",command=self.clearOutput)
         button.grid(column=1,row=row)
 
+        button = tk.Button(text = "Send to FEMM",command=self.sendToFemm)
+        button.grid(column=0,columnspan=2)
+
     def enterValues(self):
         self.specs = []
         for i in self.entries:
@@ -129,6 +132,10 @@ class app(tk.Tk):
         self.setOutput(self.results[5],round(As,3))
         self.setOutput(self.results[6],round(Ds*1000,3))
         self.setOutput(self.results[7],round(Do*1000,3))
+    
+    def sendToFemm(self):
+        newMotor = femmModel.motor()
+        newMotor.makeMotor(float(self.results[1].get())*1000,float(self.results[7].get()),float(self.results[3].get()),float(self.results[4].get()),int(self.specs[6]),int(self.specs[5]))
         
 
 window = app()  

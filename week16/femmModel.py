@@ -50,6 +50,14 @@ class motor:
         mi_addsegment(backPoints[2],backPoints[3],frontPoints[0],frontPoints[1])
         if p > 2:
             mi_addsegment(frontPoints[2],frontPoints[3],Do*math.cos(math.radians(startAngle+360/(p/2))),Do*math.sin(math.radians(startAngle+360/(p/2))))
+        
+        for i in range(q//(p//2)):
+            mi_addsegment(D*math.cos(math.radians(i*slotPitch+(startAngle/2)+backIronAngle+(toothAngle/2))),D*math.sin(math.radians(i*slotPitch+(startAngle/2)+(toothAngle/2))),D*math.cos(math.radians(i*slotPitch+(startAngle/2)+(toothAngle/2))),D*math.sin(math.radians(i*slotPitch+(startAngle/2)+backIronAngle+(toothAngle/2))))
+        
+    def makeMotor(self,D,Do,WT,dB,q,p):
+        self.drawDo(Do,p)
+        self.drawTeeth(q,WT,dB,p,D,Do)
+        
 
 
 
