@@ -40,7 +40,10 @@ class motor:
         startAngle = (180-(360/(p/2)))/2
 
         frontPoints = self.drawArc(startAngle,toothAngle/2,D)
-        mi_addsegment(frontPoints[0],frontPoints[1],Do*math.cos(startAngle),Do*math.sin(startAngle))
+        
+        if p > 2:
+            p1 = self.polarToCart(startAngle,Do)
+            mi_drawline(frontPoints[0],frontPoints[1],p1[0],p1[1])
 
         for i in range(q//(p//2)-1):
             backPoints = self.drawArc(i*slotPitch+startAngle+toothAngle/2,backIronAngle,backIronDepth)
@@ -53,7 +56,7 @@ class motor:
         frontPoints = self.drawArc((q//(p//2)-1)*slotPitch+startAngle+(toothAngle/2)+backIronAngle,toothAngle/2,D)
         mi_addsegment(backPoints[2],backPoints[3],frontPoints[0],frontPoints[1])
         if p > 2:
-            mi_addsegment(frontPoints[2],frontPoints[3],Do*math.cos(math.radians(startAngle+360/(p/2))),Do*math.sin(math.radians(startAngle+360/(p/2))))
+            mi_drawline(frontPoints[2],frontPoints[3],Do*math.cos(math.radians(startAngle+360/(p/2))),Do*math.sin(math.radians(startAngle+360/(p/2))))
         
         for i in range(q//(p//2)):
             p1 = self.polarToCart((startAngle)+(toothAngle/2)+slotPitch*i,D)
