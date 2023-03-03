@@ -10,9 +10,10 @@ class app(tk.Tk):
               "Design flux Density Bmax", #4
               "Number of pole pairs p", #5
               "Number of slots q", #6
-              "Outer diameter Do"] #7
+              "Outer diameter Do", #7
+              "Air gap g"] #8
 
-    defaults = [60,0.8,50000,3,1.4,2,24,0.2]
+    defaults = [60,0.8,50000,3,1.4,2,24,0.2,1.0]
 
     outputs = ["Split ratio D/Do",
                "Active Diameter D",
@@ -135,7 +136,7 @@ class app(tk.Tk):
     
     def sendToFemm(self):
         newMotor = femmModel.motor()
-        newMotor.makeMotor(float(self.results[1].get())*1000,float(self.results[7].get()),float(self.results[3].get()),float(self.results[4].get()),int(self.specs[6]),int(self.specs[5]))
+        newMotor.makeMotor(float(self.results[1].get())*1000,float(self.results[7].get()),float(self.results[3].get()),float(self.results[4].get()),int(self.specs[6]),int(self.specs[5]),self.specs[8])
         
 
 window = app()  

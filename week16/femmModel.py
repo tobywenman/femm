@@ -62,10 +62,23 @@ class motor:
             p1 = self.polarToCart((startAngle)+(toothAngle/2)+slotPitch*i,D)
             p2 = self.polarToCart(backIronAngle+(startAngle)+(toothAngle/2)+slotPitch*i,D) 
             mi_addarc(p1[0],p1[1],p2[0],p2[1],backIronAngle,1)
+    
+    def drawAirGap(self,g,D,p):
+        self.drawDo(D-g,p)
+        if p > 2:
+            p1 = self.polarToCart((180-(360/(p/2)))/2,D)
+            p2 = self.polarToCart((180-(360/(p/2)))/2,D-g)
+            mi_addsegment(p1[0],p1[1],p2[0],p2[1])
+            p1 = self.polarToCart(((180-(360/(p/2)))/2)+(360/(p/2)),D)
+            p2 = self.polarToCart(((180-(360/(p/2)))/2)+(360/(p/2)),D-g)
+            mi_addsegment(p1[0],p1[1],p2[0],p2[1])
 
-    def makeMotor(self,D,Do,WT,dB,q,p):
+    def makeMotor(self,D,Do,WT,dB,q,p,g):
         self.drawDo(Do,p)
         self.drawTeeth(q,WT,dB,p,D,Do)
+        self.drawAirGap(g,D,p)
+
+    
         
 
 
