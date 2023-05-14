@@ -1,5 +1,6 @@
 from femm import *
 import math
+import numpy as np
 
 class motor:
 
@@ -31,37 +32,69 @@ class motor:
         return D*math.cos(math.radians(theta)),D*math.sin(math.radians(theta))
 
 
-    def drawTeeth(self,q,WT,dB,p,D,Do):
-        slotPitch = 360/q
-        toothAngle = math.degrees(WT/D)
-        backIronAngle = slotPitch-toothAngle
-        backIronDepth = Do-dB
-
+    def drawTeeth(self,q,WT,dB,p,D,Do,W1,d1):
         startAngle = (180-(360/(p/2)))/2
 
-        frontPoints = self.drawArc(startAngle,toothAngle/2,D)
-        
-        if p > 2:
-            p1 = self.polarToCart(startAngle,Do)
-            mi_drawline(frontPoints[0],frontPoints[1],p1[0],p1[1])
+        slotPitch = 360/q
+        gapAngle = math.degrees(W1/D)
 
-        for i in range(q//(p//2)-1):
-            backPoints = self.drawArc(i*slotPitch+startAngle+toothAngle/2,backIronAngle,backIronDepth)
-            mi_addsegment(backPoints[0],backPoints[1],frontPoints[2],frontPoints[3])
-            frontPoints = self.drawArc(i*slotPitch+startAngle+(toothAngle/2)+backIronAngle,toothAngle,D)
-            mi_addsegment(backPoints[2],backPoints[3],frontPoints[0],frontPoints[1])
+        self.drawArc(startAngle,(slotPitch/2)-(gapAngle/2),D)
+
+        p1 = self.polarToCart(startAngle+(slotPitch/2),D)
+        p2 = self.polarToCart(startAngle+(slotPitch/2),Do)
+
+        toothVector = np.array([p2[0]-p1[0],p2[1]-p1[1]])
+
+        toothVector = toothVector / np.linalg.norm(toothVector)
+        toothVector = toothVector * d1
+
+        perpVector = np.array([1,-toothVector[0]/toothVector[1]])
+        perpVector = perpVector / np.linalg.norm(perpVector) 
+        perpVector = perpVector * (W1/2)
+
+        toothVector = toothVector+perpVector
+
+        mi_addnode(p1[0]+toothVector[0],p1[1]+toothVector[1])
+        p3 = self.polarToCart(startAngle+(slotPitch/2)-(gapAngle/2),D)
+        mi_addsegment(p3[0],p3[1],p1[0]+toothVector[0],p1[1]+toothVector[1])
+
+    def testTeeth(self,W1,D,d1,q,WT,wTheta,Do,dB):
+        Ds = Do-dB
+        wTheta = math.radians(wTheta)
+        slotPitch = math.radians(360/q)
+        beta = math.asin(W1/D)
+        a = (D/2) * math.cos(beta) + d1 - (W1*math.cos(slotPitch/2)+WT)/(2*math.sin(slotPitch/2))
+        b = a * (math.sin(slotPitch/2)/math.sin(wTheta-slotPitch/2))
+
+        print(W1/2,math.cos(beta)*D/2)
+
+        points = []
+
+        points.append((W1/2,d1+math.cos(beta)*D/2))
+        points.append(((W1/2)+b*math.sin(wTheta),math.cos(beta)*D/2+d1+b*math.cos(wTheta)))
+        points.append((math.sin(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2-math.cos(slotPitch/2)*WT/2,math.cos(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2+math.sin(slotPitch/2)*WT/2))
+
+        print(points)
+
+        prevPoint = ((W1/2,math.cos(beta)*D/2))
+        mi_addnode(prevPoint[0],prevPoint[1])
+
+        for i in points:
+            mi_addnode(i[0],i[1])
+            mi_addsegment(i[0],i[1],prevPoint[0],prevPoint[1])
+            prevPoint = i
+
+        # mi_addnode(W1/2,math.cos(beta)*D/2)
+        # mi_addnode(W1/2,d1+math.cos(beta)*D/2)
+        # mi_addnode((W1/2)+b*math.sin(wTheta),math.cos(beta)*D/2+d1+b*math.cos(wTheta))
+        # mi_addnode(math.sin(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2-math.cos(slotPitch/2)*WT/2,math.cos(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2+math.sin(slotPitch/2)*WT/2)
+    
+    
+
+
         
-        backPoints = self.drawArc((q//(p//2)-1)*slotPitch+startAngle+toothAngle/2,backIronAngle,backIronDepth)
-        mi_addsegment(backPoints[0],backPoints[1],frontPoints[2],frontPoints[3])
-        frontPoints = self.drawArc((q//(p//2)-1)*slotPitch+startAngle+(toothAngle/2)+backIronAngle,toothAngle/2,D)
-        mi_addsegment(backPoints[2],backPoints[3],frontPoints[0],frontPoints[1])
-        if p > 2:
-            mi_drawline(frontPoints[2],frontPoints[3],Do*math.cos(math.radians(startAngle+360/(p/2))),Do*math.sin(math.radians(startAngle+360/(p/2))))
         
-        for i in range(q//(p//2)):
-            p1 = self.polarToCart((startAngle)+(toothAngle/2)+slotPitch*i,D)
-            p2 = self.polarToCart(backIronAngle+(startAngle)+(toothAngle/2)+slotPitch*i,D) 
-            mi_addarc(p1[0],p1[1],p2[0],p2[1],backIronAngle,1)
+    
     
     def drawAirGap(self,g,D,p):
         self.drawDo(D-g,p)
@@ -73,9 +106,9 @@ class motor:
             p2 = self.polarToCart(((180-(360/(p/2)))/2)+(360/(p/2)),D-g)
             mi_addsegment(p1[0],p1[1],p2[0],p2[1])
 
-    def makeMotor(self,D,Do,WT,dB,q,p,g):
+    def makeMotor(self,D,Do,WT,dB,q,p,g,W1,d1):
         self.drawDo(Do,p)
-        self.drawTeeth(q,WT,dB,p,D,Do)
+        self.drawTeeth(q,WT,dB,p,D,Do,W1,d1)
         self.drawAirGap(g,D,p)
 
     
@@ -86,11 +119,8 @@ class motor:
 
 
 if __name__=="__main__":
-    openfemm()
-    newdocument(0)
-    
+
     newMotor = motor()
-    newMotor.drawDo(200,2)
-    newMotor.drawTeeth(24,8.7,16.5,2,116,200)
+    newMotor.testTeeth(3.3,129,1,24,9.6,70,200,9.2)
     
     input("press enter to exit")

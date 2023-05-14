@@ -11,9 +11,12 @@ class app(tk.Tk):
               "Number of pole pairs p", #5
               "Number of slots q", #6
               "Outer diameter Do", #7
-              "Air gap g"] #8
+              "Air gap g", #8
+              "Slot opening",#9
+              "ThetaW",#10
+              "D1"]#11
 
-    defaults = [60,0.8,50000,3,1.4,2,24,0.2,1.0]
+    defaults = [60,0.8,50000,3,1.4,4,24,0.2,1.0,0.2,70,1]
 
     outputs = ["Split ratio D/Do",
                "Active Diameter D",
@@ -22,7 +25,8 @@ class app(tk.Tk):
                "Back iron depth dB/mm",
                "Slot Area As/mm²",
                "Slot bottom dia. Ds/mm",
-               "Outer diameter Do/mm"]
+               "Outer diameter Do/mm",
+               "W1/mm"]
 
     specs = []
 
@@ -128,15 +132,18 @@ class app(tk.Tk):
         As = (Q*math.pi*D)/(q*(J/1000/1000))
         Ds = Do - 2*dB
 
+        W1 = self.specs[9]*(math.pi*D)/q
+
         self.setOutput(self.results[3],round(WT*1000,3))
         self.setOutput(self.results[4],round(dB*1000,3))
         self.setOutput(self.results[5],round(As,3))
         self.setOutput(self.results[6],round(Ds*1000,3))
         self.setOutput(self.results[7],round(Do*1000,3))
+        self.setOutput(self.results[8],round(W1*1000,3))
     
     def sendToFemm(self):
         newMotor = femmModel.motor()
-        newMotor.makeMotor(float(self.results[1].get())*1000,float(self.results[7].get()),float(self.results[3].get()),float(self.results[4].get()),int(self.specs[6]),int(self.specs[5]),self.specs[8])
+        newMotor.makeMotor(float(self.results[1].get())*1000,float(self.results[7].get()),float(self.results[3].get()),float(self.results[4].get()),int(self.specs[6]),int(self.specs[5]),self.specs[8],float(self.results[8].get()),self.specs[11])
         
 
 window = app()  
