@@ -70,25 +70,28 @@ class motor:
 
         points = []
 
-        points.append((W1/2,d1+math.cos(beta)*D/2))
-        points.append(((W1/2)+b*math.sin(wTheta),math.cos(beta)*D/2+d1+b*math.cos(wTheta)))
-        points.append((math.sin(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2-math.cos(slotPitch/2)*WT/2,math.cos(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2+math.sin(slotPitch/2)*WT/2))
+        points.append(np.matrix((W1/2,math.cos(beta)*D/2)))
+
+        points.append(np.matrix((W1/2,d1+math.cos(beta)*D/2)))
+        points.append(np.matrix(((W1/2)+b*math.sin(wTheta),math.cos(beta)*D/2+d1+b*math.cos(wTheta))))
+        points.append(np.matrix((math.sin(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2-math.cos(slotPitch/2)*WT/2,math.cos(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2+math.sin(slotPitch/2)*WT/2)))
+
+
+
+        for i in reversed(points):
+            points.append(i*np.matrix([[-1,0],[0,1]]))
 
         print(points)
+       
+        mi_addnode(points[0][0,0],points[0][0,1])
+        prevPoint = points[0]
 
-        prevPoint = ((W1/2,math.cos(beta)*D/2))
-        mi_addnode(prevPoint[0],prevPoint[1])
-
-        for i in points:
-            mi_addnode(i[0],i[1])
-            mi_addsegment(i[0],i[1],prevPoint[0],prevPoint[1])
+        for i in points[1:]:
+            mi_addnode(i[0,0],i[0,1])
+            mi_addsegment(i[0,0],i[0,1],prevPoint[0,0],prevPoint[0,1])
             prevPoint = i
 
-        # mi_addnode(W1/2,math.cos(beta)*D/2)
-        # mi_addnode(W1/2,d1+math.cos(beta)*D/2)
-        # mi_addnode((W1/2)+b*math.sin(wTheta),math.cos(beta)*D/2+d1+b*math.cos(wTheta))
-        # mi_addnode(math.sin(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2-math.cos(slotPitch/2)*WT/2,math.cos(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2+math.sin(slotPitch/2)*WT/2)
-    
+        
     
 
 
