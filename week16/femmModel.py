@@ -58,15 +58,13 @@ class motor:
         p3 = self.polarToCart(startAngle+(slotPitch/2)-(gapAngle/2),D)
         mi_addsegment(p3[0],p3[1],p1[0]+toothVector[0],p1[1]+toothVector[1])
 
-    def testTeeth(self,W1,D,d1,q,WT,wTheta,Do,dB):
+    def testTeeth(self,W1,D,d1,q,WT,wTheta,Do,dB,p):
         Ds = Do-dB
         wTheta = math.radians(wTheta)
         slotPitch = math.radians(360/q)
         beta = math.asin(W1/D)
         a = (D/2) * math.cos(beta) + d1 - (W1*math.cos(slotPitch/2)+WT)/(2*math.sin(slotPitch/2))
         b = a * (math.sin(slotPitch/2)/math.sin(wTheta-slotPitch/2))
-
-        print(W1/2,math.cos(beta)*D/2)
 
         points = []
 
@@ -81,7 +79,15 @@ class motor:
         for i in reversed(points):
             points.append(i*np.matrix([[-1,0],[0,1]]))
 
-        print(points)
+        slotPitch = math.pi*2/q
+
+        pointsLen = len(points)
+        for i in range(1,q//p):
+            for j in range(pointsLen):
+                angle = -i*slotPitch
+                rotMatrix = np.matrix([[math.cos(angle),-math.sin(angle)],
+                                       [math.sin(angle),math.cos(angle)]])
+                points.append(points[j]*rotMatrix)
        
         mi_addnode(points[0][0,0],points[0][0,1])
         prevPoint = points[0]
@@ -124,6 +130,6 @@ class motor:
 if __name__=="__main__":
 
     newMotor = motor()
-    newMotor.testTeeth(3.3,129,1,24,9.6,70,200,9.2)
+    newMotor.testTeeth(3.3,129,1,24,9.6,70,200,9.2,4)
     
     input("press enter to exit")
