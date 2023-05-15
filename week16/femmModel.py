@@ -93,10 +93,8 @@ class motor:
             p2 = self.polarToCart(((180-(360/(p/2)))/2)+(360/(p/2)),D-g)
             mi_addsegment(p1[0],p1[1],p2[0],p2[1])
 
-    def makeMotor(self,D,Do,WT,dB,q,p,g,W1,d1):
-        self.drawDo(Do,p)
-        self.drawTeeth(q,WT,dB,p,D,Do,W1,d1)
-        self.drawAirGap(g,D,p)
+    def makeMotor(self,D,Do,WT,dB,q,p,g,W1,d1,wTheta):
+        self.testTeeth(W1,D,d1,q,WT,wTheta,Do,dB,p)
 
 class line:
 
