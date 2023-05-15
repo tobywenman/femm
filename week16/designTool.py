@@ -142,6 +142,7 @@ class app(tk.Tk):
         self.setOutput(self.results[8],round(W1*1000,3))
     
     def sendToFemm(self):
+        self.enterValues()
         newMotor = femmModel.motor()
         newMotor.makeMotor(float(self.results[1].get())*1000,float(self.results[7].get()),float(self.results[3].get()),float(self.results[4].get()),int(self.specs[6]),int(self.specs[5]),self.specs[8],float(self.results[8].get()),self.specs[11],self.specs[10])
         
