@@ -53,6 +53,14 @@ class motor:
         for i in reversed(points[0]):
             points[0].append(i*np.matrix([[-1,0],[0,1]]))
 
+        slotPitch = math.pi*2/q
+        angle = (math.pi/2)-(slotPitch/2)
+        rotMatrix = np.matrix([[math.cos(angle),-math.sin(angle)],
+                                       [math.sin(angle),math.cos(angle)]])
+
+        for i in range(len(points[0])):
+            points[0][i] *= rotMatrix
+
         for i in range(len(points[0])-1):
             lines.append(line([points[0][i],points[0][i+1]]))
 
@@ -132,6 +140,6 @@ class line:
 if __name__=="__main__":
 
     newMotor = motor()
-    newMotor.testTeeth(3.3,129,1,24,9.6,70,200,9.2,1)
+    newMotor.testTeeth(3.3,129,1,24,9.6,70,200,9.2,2)
     
     input("press enter to exit")
