@@ -19,14 +19,21 @@ class motor:
 
         return points
 
-    def drawDo(self,Do,p):
-        if p > 2:
-            dtheta = 360/(p/2)
-            theta = (180-dtheta)/2
-            self.drawArc(theta,dtheta,Do)
+    def drawDo(self,Do,p,D):
+        if p > 1:
+            dtheta = 360/p
+            theta = 0
+            self.drawArc(theta,dtheta,Do/2)
+
+            mi_addnode(*self.polarToCart(360/p,D/2))
+            mi_addnode(D/2,0)
+
+            mi_addsegment(*self.polarToCart(360/p,D/2),*self.polarToCart(360/p,Do/2))
+            mi_addsegment(D/2,0,Do,0)
+
         else:
-            self.drawArc(0,180,Do)
-            self.drawArc(180,180,Do)
+            self.drawArc(0,180,Do/2)
+            self.drawArc(180,180,Do/2)
 
     def polarToCart(self,theta,D):
         return D*math.cos(math.radians(theta)),D*math.sin(math.radians(theta))
@@ -50,6 +57,16 @@ class motor:
         points[0].append(np.matrix(((W1/2)+b*math.sin(wTheta),math.cos(beta)*D/2+d1+b*math.cos(wTheta))))
         points[0].append(np.matrix((math.sin(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2-math.cos(slotPitch/2)*WT/2,math.cos(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2+math.sin(slotPitch/2)*WT/2)))
 
+        x3 = (W1/2)+b*math.sin(wTheta)
+        x4 = math.sin(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2-math.cos(slotPitch/2)*WT/2
+        x5 = math.sqrt(((x3**2)+(x4**2))/2)
+
+        y3 = math.cos(beta)*D/2+d1+b*math.cos(wTheta)
+        y4 = math.cos(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2+math.sin(slotPitch/2)*WT/2
+        y5 = y3 + ((y4-y3)*(x5-x3)/(x4-x3))
+
+        points[0].insert(3,np.matrix([x5,y5]))        
+        
         for i in reversed(points[0]):
             points[0].append(i*np.matrix([[-1,0],[0,1]]))
 
@@ -80,8 +97,13 @@ class motor:
 
         for i in range(len(points)-1):
             lines.append(line([points[i][-1],points[i+1][0]],curve=True))
+        
+        lines.append(line([np.matrix([D/2,0]),points[0][0]],curve=True))
+        lines.append(line([points[-1][-1],np.matrix(self.polarToCart(360/p,D/2))],curve=True))
 
         for teeth in points:
+            lines.append(line([teeth[2],teeth[7]]))
+            lines.append(line([teeth[3],teeth[6]]))
             for i in teeth:
                 mi_addnode(i[0,0],i[0,1])
         
@@ -92,17 +114,17 @@ class motor:
     
     
     def drawAirGap(self,g,D,p):
-        self.drawDo(D-g,p)
-        if p > 2:
-            p1 = self.polarToCart((180-(360/(p/2)))/2,D)
-            p2 = self.polarToCart((180-(360/(p/2)))/2,D-g)
-            mi_addsegment(p1[0],p1[1],p2[0],p2[1])
-            p1 = self.polarToCart(((180-(360/(p/2)))/2)+(360/(p/2)),D)
-            p2 = self.polarToCart(((180-(360/(p/2)))/2)+(360/(p/2)),D-g)
-            mi_addsegment(p1[0],p1[1],p2[0],p2[1])
+        self.drawArc(0,360/p,(D/2)-g)
+        mi_addsegment(D/2,0,(D/2)-g,0)
+        mi_addsegment(*self.polarToCart(360/p,D/2),*self.polarToCart(360/p,(D/2)-g))
+
+
 
     def makeMotor(self,D,Do,WT,dB,q,p,g,W1,d1,wTheta):
+        self.drawDo(Do,p,D)
         self.testTeeth(W1,D,d1,q,WT,wTheta,Do,dB,p)
+        self.drawAirGap(g,D,p)
+        
 
 class line:
 
