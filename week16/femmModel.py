@@ -112,7 +112,6 @@ class line:
     
     def draw(self, centre=np.matrix([0,0])):
         if self.curve:
-            print(self.points)
             vector1 = self.points[0]-centre
             vector2 = self.points[1]-centre
 
