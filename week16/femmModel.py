@@ -38,8 +38,8 @@ class motor:
     def polarToCart(self,theta,D):
         return D*math.cos(math.radians(theta)),D*math.sin(math.radians(theta))
 
-    def testTeeth(self,W1,D,d1,q,WT,wTheta,Do,dB,p):
-        Ds = Do-dB
+    def testTeeth(self,W1,D,d1,q,WT,wTheta,Do,dB,p,g):
+        Ds = Do-(dB*2)
         wTheta = math.radians(wTheta)
         slotPitch = math.radians(360/q)
         beta = math.asin(W1/D)
@@ -55,7 +55,7 @@ class motor:
 
         points[0].append(np.matrix((W1/2,d1+math.cos(beta)*D/2)))
         points[0].append(np.matrix(((W1/2)+b*math.sin(wTheta),math.cos(beta)*D/2+d1+b*math.cos(wTheta))))
-        points[0].append(np.matrix((math.sin(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2-math.cos(slotPitch/2)*WT/2,math.cos(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2+math.sin(slotPitch/2)*WT/2)))
+        points[0].append(np.matrix((math.sin(slotPitch/2)*math.sqrt((Ds**2-WT**2))/2-math.cos(slotPitch/2)*WT/2,math.cos(slotPitch/2)*math.sqrt((Ds**2-WT**2))/2+math.sin(slotPitch/2)*WT/2)))
 
         x3 = (W1/2)+b*math.sin(wTheta)
         x4 = math.sin(slotPitch/2)*math.sqrt(Ds**2-WT**2)/2-math.cos(slotPitch/2)*WT/2
@@ -101,7 +101,17 @@ class motor:
         lines.append(line([np.matrix([D/2,0]),points[0][0]],curve=True))
         lines.append(line([points[-1][-1],np.matrix(self.polarToCart(360/p,D/2))],curve=True))
 
+        group = 1
+
         for teeth in points:
+            label1 = (teeth[3]+teeth[5])/2
+            label2 = (teeth[2]+teeth[6])/2
+            
+            self.makeBlockLabel(label1,"Coil",group)
+            group += 1
+            self.makeBlockLabel(label2,"Coil",group)
+            group += 1
+
             lines.append(line([teeth[2],teeth[7]]))
             lines.append(line([teeth[3],teeth[6]]))
             for i in teeth:
@@ -110,6 +120,8 @@ class motor:
         for i in lines:
             i.draw()
 
+        self.makeBlockLabel(np.matrix(self.polarToCart(360/p/2,(Do/2)-(dB/2))),"M-15 Steel",0)
+        self.makeBlockLabel(np.matrix(self.polarToCart(360/q/2,(D/2)-(g/2))),"Air",0)
         
     
     
@@ -120,11 +132,73 @@ class motor:
 
 
 
-    def makeMotor(self,D,Do,WT,dB,q,p,g,W1,d1,wTheta):
+    def makeMotor(self,D,Do,WT,dB,q,p,g,W1,d1,wTheta,As,J):
+        self.addMaterials()
         self.drawDo(Do,p,D)
-        self.testTeeth(W1,D,d1,q,WT,wTheta,Do,dB,p)
+        self.testTeeth(W1,D,d1,q,WT,wTheta,Do,dB,p,g)
         self.drawAirGap(g,D,p)
-        
+
+        current = J*(As/2)
+
+        print(f"As: {As}, J: {J}")
+
+        self.setCoils(current,q,p)
+
+        self.calcResult(D,g,p)
+
+    
+    def addMaterials(self):
+        mi_getmaterial("M-15 Steel")
+        mi_addmaterial("Coil",1,1,0,0,0,0,0,0,0,0,0,0,0,0)
+        mi_getmaterial("Air")
+
+    def makeBlockLabel(self,pos,material,group):
+        listPos = np.matrix.tolist(pos)[0]
+        mi_addblocklabel(*listPos)
+        mi_selectlabel(*listPos)
+        mi_setblockprop(material,1,0,"",0,group,0)
+        mi_clearselected()
+
+    def setCoils(self,current,q,p):
+        groups = (q//p)*2
+
+        windings = self.generatePattern(q,p,0)
+
+        mi_addcircprop("R",current,1)
+        mi_addcircprop("B",-current/2,1)
+        mi_addcircprop("Y",-current/2,1)
+
+        for i in range(1,groups+1):
+            mi_selectgroup(i)
+            mi_setblockprop("Coil",1,0,windings[i-1][0],0,i,windings[i-1][1])
+            mi_clearselected()
+
+    def generatePattern(self,s,p,b):
+        """(number of slots,number of poles,short chording)"""
+        m = s/(p/2)
+        circuits = [['R',1],['B',1],['Y',1]] #circuit name, direction
+        currentCir = 0
+        windings = [["",0]]*s
+
+        return windings
+
+    def calcResult(self,D,g,p):
+        mi_saveas("test.FEM")
+
+        mi_analyse(0)
+        mi_loadsolution()
+
+        dist = (D/2)-(g/2)
+
+        end = self.polarToCart(360/p,dist)
+
+        mo_seteditmode('contour') 
+        mo_addcontour(dist,0) 
+        mo_addcontour(*end) 
+        mo_bendcontour(360/p,1)
+
+
+
 
 class line:
 
