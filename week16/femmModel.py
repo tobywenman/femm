@@ -162,7 +162,7 @@ class motor:
     def setCoils(self,current,q,p):
         groups = (q//p)*2
 
-        windings = self.generatePattern(q,p,0)
+        windings = self.generatePattern(q,p,1)
 
         mi_addcircprop("R",current,1)
         mi_addcircprop("B",-current/2,1)
@@ -175,10 +175,32 @@ class motor:
 
     def generatePattern(self,s,p,b):
         """(number of slots,number of poles,short chording)"""
-        m = s/(p/2)
+        groupNum = s//(p//2)
+        m = groupNum//12
         circuits = [['R',1],['B',1],['Y',1]] #circuit name, direction
         currentCir = 0
-        windings = [["",0]]*s
+        windings = [["",0]]*groupNum
+
+        count = 0
+        for i in range(groupNum):
+            count += 1
+
+            #short chording
+            if i % 2 == 0:
+                slot = (i+b*2)%groupNum
+                print(f"shifted slot num: {slot}")
+                windings[slot] = [circuits[currentCir][0],circuits[currentCir][1]]
+            else:
+                print("odd")
+                windings[i] = [circuits[currentCir][0],circuits[currentCir][1]]
+
+            if count >= m*2:
+                count = 0
+                circuits[currentCir][1] *= -1
+                currentCir += 1
+                if currentCir > 2:
+                    currentCir = 0
+
 
         return windings
 
@@ -236,6 +258,6 @@ class line:
 if __name__=="__main__":
 
     newMotor = motor()
-    newMotor.testTeeth(3.3,129,1,24,9.6,70,200,9.2,2)
+    newMotor.testTeeth(3.3,129,1,24,9.6,70,200,9.2,2,1)
     
     input("press enter to exit")
