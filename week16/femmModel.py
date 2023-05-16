@@ -132,7 +132,7 @@ class motor:
 
 
 
-    def makeMotor(self,D,Do,WT,dB,q,p,g,W1,d1,wTheta,As,J):
+    def makeMotor(self,D,Do,WT,dB,q,p,g,W1,d1,wTheta,As,J,b):
         self.addMaterials()
         self.drawDo(Do,p,D)
         self.testTeeth(W1,D,d1,q,WT,wTheta,Do,dB,p,g)
@@ -142,7 +142,7 @@ class motor:
 
         print(f"As: {As}, J: {J}")
 
-        self.setCoils(current,q,p)
+        self.setCoils(current,q,p,b)
 
         self.calcResult(D,g,p)
 
@@ -159,10 +159,10 @@ class motor:
         mi_setblockprop(material,1,0,"",0,group,0)
         mi_clearselected()
 
-    def setCoils(self,current,q,p):
+    def setCoils(self,current,q,p,b):
         groups = (q//p)*2
 
-        windings = self.generatePattern(q,p,1)
+        windings = self.generatePattern(q,p,b)
 
         mi_addcircprop("R",current,1)
         mi_addcircprop("B",-current/2,1)

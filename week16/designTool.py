@@ -14,9 +14,10 @@ class app(tk.Tk):
               "Air gap g", #8
               "Slot opening",#9
               "ThetaW",#10
-              "D1"]#11
+              "D1",#11
+              "shortPitch b"]#12
 
-    defaults = [60,0.8,50000,3,1.4,4,24,0.2,1.0,0.2,70,1]
+    defaults = [60,0.8,50000,3,1.4,4,24,0.2,1.0,0.2,70,1,0]
 
     outputs = ["Split ratio D/Do",
                "Active Diameter D",
@@ -144,7 +145,7 @@ class app(tk.Tk):
     def sendToFemm(self):
         self.enterValues()
         newMotor = femmModel.motor()
-        newMotor.makeMotor(float(self.results[1].get())*1000,float(self.results[7].get()),float(self.results[3].get()),float(self.results[4].get()),int(self.specs[6]),int(self.specs[5]),self.specs[8],float(self.results[8].get()),self.specs[11],self.specs[10],float(self.results[5].get()),self.specs[3])
+        newMotor.makeMotor(float(self.results[1].get())*1000,float(self.results[7].get()),float(self.results[3].get()),float(self.results[4].get()),int(self.specs[6]),int(self.specs[5]),self.specs[8],float(self.results[8].get()),self.specs[11],self.specs[10],float(self.results[5].get()),self.specs[3],int(self.specs[12]))
         
 
 window = app()  
