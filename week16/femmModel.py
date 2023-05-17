@@ -20,16 +20,38 @@ class motor:
         return points
 
     def drawDo(self,Do,p,D):
+
+        mi_addboundprop("Zero",0,0,0,0)
+        mi_addboundprop("SA",0,0,0,0,0,0,0,0,4)
+        mi_addboundprop("SB",0,0,0,0,0,0,0,0,4)
+
         if p > 1:
             dtheta = 360/p
             theta = 0
             self.drawArc(theta,dtheta,Do/2)
 
+            mi_clearselected()
+            mi_selectarcsegment(*self.polarToCart(theta+(dtheta/2),Do/2))
+            mi_setarcsegmentprop(0,"Zero",0,0)
+            mi_clearselected()
+
             mi_addnode(*self.polarToCart(360/p,D/2))
             mi_addnode(D/2,0)
 
-            mi_addsegment(*self.polarToCart(360/p,D/2),*self.polarToCart(360/p,Do/2))
+            p1 = self.polarToCart(360/p,D/2)
+            p2 = self.polarToCart(360/p,Do/2)
+
+            centre = ((p1[0]+p2[0])/2,(p1[1]+p2[1])/2)
+
+            mi_addsegment(*p1,*p2)
+            mi_selectsegment(*centre)
+            mi_setsegmentprop("SA",0,1,0,0)
+            mi_clearselected()
+
             mi_addsegment(D/2,0,Do,0)
+            mi_selectsegment(((D/2)+Do)/2,0)
+            mi_setsegmentprop("SB",0,1,0,0)
+            mi_clearselected()
 
         else:
             self.drawArc(0,180,Do/2)
@@ -138,9 +160,7 @@ class motor:
         self.testTeeth(W1,D,d1,q,WT,wTheta,Do,dB,p,g)
         self.drawAirGap(g,D,p)
 
-        current = J*(As/2)
-
-        print(f"As: {As}, J: {J}")
+        current = J*(As/2)/math.sqrt(2)
 
         self.setCoils(current,q,p,b)
 
@@ -175,8 +195,12 @@ class motor:
 
     def generatePattern(self,s,p,b):
         """(number of slots,number of poles,short chording)"""
-        groupNum = s//(p//2)
-        m = groupNum//12
+        groupNum = 2*s//p
+        m = groupNum/12
+
+        print(groupNum)
+        print(m)
+        
         circuits = [['R',1],['B',1],['Y',1]] #circuit name, direction
         currentCir = 0
         windings = [["",0]]*groupNum
@@ -188,10 +212,8 @@ class motor:
             #short chording
             if i % 2 == 0:
                 slot = (i+b*2)%groupNum
-                print(f"shifted slot num: {slot}")
                 windings[slot] = [circuits[currentCir][0],circuits[currentCir][1]]
             else:
-                print("odd")
                 windings[i] = [circuits[currentCir][0],circuits[currentCir][1]]
 
             if count >= m*2:
